@@ -1,6 +1,7 @@
 #include <vector>
 #include <list>
 #include <cstdio>
+#include <iostream>
 using namespace std;
 
 // Do not edit the class below except for
@@ -23,16 +24,18 @@ public:
 
     if ( val < value ) {
       if ( left ) {
-        return left->insert( val );
+        left->insert( val );
+      } else {
+	BST *node = new BST(val);
+	left = node;
       }
-      BST *node = new BST(val);
-      left = node;
     } else if ( val >= value ) {
       if ( right ) {
-        return right->insert( val );
+        right->insert( val );
+      } else {
+	BST *node = new BST(val);
+	right = node;
       }
-      BST *node = new BST(val);
-      right = node;
     } 
     // Write your code here.
     // Do not edit the return statement of this method.
@@ -64,10 +67,10 @@ public:
   BST * findAndSwap( int val, int &swapVal ) {
 
     if ( val == value ) {
-      if ( left ) {
-        left = left->detachAndReturn(swapVal, true);
-      } else if ( right ) {
+      if ( right ) {
         right = right->detachAndReturn(swapVal, false);
+      } else if ( left ) {
+        left = left->detachAndReturn(swapVal, true);
       } else {
         return nullptr;
       }
@@ -114,58 +117,61 @@ public:
       nodes.pop_front();
       if ( node.left ) nodes.push_back(*node.left);
       if ( node.right ) nodes.push_back(*node.right);
-      printf("node:%d left:%d right:%d\n", node.value, node.left ? node.left->value : -1, node.right ? node.right->value : -1 );
+      printf("node:%d left:%d right:%d value:%d\n", node.value, node.left ? node.left->value : -1, node.right ? node.right->value : -1, node.value );
     }
+  }
+
+  static void Usage(void) {
+    printf("\
+Binary tree construct/helper           \n\
+----------------------------             \
+    \n");
   }
 };
 
 int main( int argc, char ** argv ) {
+
+  int rootval;
+  cout << "Enter value for BST root node: ";
+  cin >> rootval;
+  BST bst(rootval);
+  bool abort = false;
+  printf("bst:%p\n", &bst);
   
-  BST root(10);
-  printf("\nroot\n");
-  root.printTree();
-  
-  root.insert(5);
-  printf("\ninsert 5\n");
-  root.printTree();
+  while ( true ) {
+    char op;
+    int val;
+    cout << endl;
+    cout << "Enter next op: c(contains) e(exit) i(insert) p(print) r(remove): ";
+    cin >> op;
 
+    if        ( op == 'c' ) {
+      cout << "Contains what value: ";
+      cin >> val;
+      printf("Contains:%d --> %s\n", val, bst.contains(val) ? "T":"F");
+    } else if ( op == 'e' ) {
+      printf("Exitting...\n");
+      abort = true;
+    } else if ( op == 'i' ) {
+      cout << "Enter value to insert: ";
+      cin >> val;
+      bst.insert(val);
+      printf("Inserting %d... bst:%p val:%d\n", val, &bst, bst.value);
+      
+    } else if ( op == 'p' ) {
+      bst.printTree();
+    } else if ( op == 'r' ) {
+      cout << "Enter value to remove: ";
+      cin >> val;
+      printf("Removing %d... bst:%p val:%d\n", val, &bst, bst.value);
+      bst.remove(val);
+    } else {
+      cout << "Invalid entry - try again" << endl;
+    }
 
-  root.insert(15);
-  printf("\ninsert 15\n");
-  root.printTree();
-
-
-  root.insert(2);
-  printf("\ninsert 2\n");
-  root.printTree();
-
-  root.insert(5);
-  printf("\ninsert 5\n");
-  root.printTree();
-
-  root.insert(13);
-  printf("\ninsert 13\n");
-  root.printTree();
-
-  root.insert(22);
-  printf("\ninsert 22\n");
-  root.printTree();
-
-  root.insert(1);
-  printf("\ninsert 1\n");
-  root.printTree();
-
-  root.insert(14);
-  printf("\ninsert 14\n");
-  root.printTree();
-
-  root.insert(12);
-  printf("\ninsert 12\n");
-  root.printTree();
-
-  root.remove(1);
-  printf("\nremove 1\n");
-  root.printTree();
-
-  printf("contains 15:%s\n", root.contains(15) ? "T":"F");
+    if ( !abort )
+      continue;
+    break;
+  }
+  return 0;
 }
