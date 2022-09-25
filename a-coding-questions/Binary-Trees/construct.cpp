@@ -20,7 +20,12 @@ public:
     right = nullptr;
   }
 
-    BST &insert(int val) {
+  BST( void ) {
+    left = nullptr;
+    right = nullptr;
+  }
+
+  BST &insert(int val) {
 
     if ( val < value ) {
       if ( left ) {
@@ -126,45 +131,153 @@ public:
 Binary tree construct/helper           \n\
 ----------------------------             \
     \n");
+
   }
+
+  // Find first matching entry based on in-order search
+  BST * findNode( int val ) {
+
+    BST *node;
+      
+    if ( left ) {
+      node = left->findNode( val );
+      if ( node ) return node;
+    }
+
+    if ( val == value ) {
+      return this;
+    }
+    
+    if ( right ) {
+      node = right->findNode( val );
+      if ( node ) return node;
+    }
+
+    return nullptr;
+  }
+
 };
+
+// =============================================================================
+// ================= validate BST (start)
+// =============================================================================
+void validateBstAsList(BST *tree, vector<int> &valueList) {
+
+  if ( tree == NULL )
+    return;
+  
+  validateBstAsList(tree->left, valueList);
+  valueList.push_back(tree->value);
+  validateBstAsList(tree->right, valueList);
+  return;
+}
+
+bool validateBst(BST *tree) {
+  // Write your code here.
+  vector<int> valueList;
+  validateBstAsList(tree, valueList);
+
+  bool visited = false;
+  int last;
+  bool isBst = true;
+  for ( auto iter = valueList.begin(); iter != valueList.end(); iter++ ) {
+    if ( !visited) {
+      last = *iter;
+      continue;
+    }
+    if ( *iter < last ) {
+      isBst = false;
+      break;
+    }
+    last = *iter;
+  }
+  return true;
+}
+
+// =============================================================================
+// ================= validate BST (end)
+// =============================================================================
 
 int main( int argc, char ** argv ) {
 
-  int rootval;
-  cout << "Enter value for BST root node: ";
-  cin >> rootval;
-  BST bst(rootval);
+  BST *root = nullptr;
   bool abort = false;
-  printf("bst:%p\n", &bst);
+  bool rootSet = false;
   
   while ( true ) {
     char op;
-    int val;
-    cout << endl;
-    cout << "Enter next op: c(contains) e(exit) i(insert) p(print) r(remove): ";
+    cout << "Enter next op: b(build tree) c(contains) e(exit) i(insert) p(print) r(remove) v(validateBst): ";
     cin >> op;
+    printf("read %c\n", op);
 
-    if        ( op == 'c' ) {
+    if ( op == 'b' ) {
+      int value;
+      cout << "Entry node value: ";
+      cin >> value;
+      if ( !rootSet ) {
+	// initialize as root node
+	rootSet = true;
+	cout << "This is first node added, so treating as root node" << endl;
+	root = new BST(value);
+      } else {
+	int parent;
+	cout << "Entry parent node value: ";
+	cin >> parent;
+	BST *parentNode = root->findNode( parent );
+	if ( parentNode ) {
+	  char leftOrRight;
+	  cout << "Enter 'l' for left child, or 'r' for right child: ";
+	  cin >> leftOrRight;
+	  if ( leftOrRight == 'l' ) {
+	    if ( parentNode->left ) {
+	      cout << "left node is already set for node: " << parentNode->value << " - cannot overwrite - Try again" << endl;
+	    } else {
+	      parentNode->left = new BST(value);
+	    }
+	  } else if ( leftOrRight == 'r' ) {
+	    if ( parentNode->right ) {
+	      cout << "right node is already set for node: " << parentNode->value << " - cannot overwrite - Try again" << endl;
+	    } else {
+	      parentNode->right = new BST(value);
+	    }
+	  } else {
+	    cout << "Invalid entry. Must enter 'l' or 'r'. Try again." << endl;
+	    root->printTree();
+	    cout << endl;
+	  }
+	} else {
+	  cout << "Cannot find parent - try again" << endl;
+	} 
+	  
+      }
+      cout << "Tree:" << endl;
+      root->printTree();
+      cout << endl;      
+    } else if ( op == 'c' ) {
+      int value;
       cout << "Contains what value: ";
-      cin >> val;
-      printf("Contains:%d --> %s\n", val, bst.contains(val) ? "T":"F");
+      cin >> value;
+      printf("Contains:%d --> %s\n", value, root->contains(value) ? "T":"F");
     } else if ( op == 'e' ) {
       printf("Exitting...\n");
       abort = true;
     } else if ( op == 'i' ) {
+      int value;
       cout << "Enter value to insert: ";
-      cin >> val;
-      bst.insert(val);
-      printf("Inserting %d... bst:%p val:%d\n", val, &bst, bst.value);
-      
+      cin >> value;
+      root->insert(value);
+      printf("Inserting %d... bst:%p val:%d\n", value, root, root->value);
     } else if ( op == 'p' ) {
-      bst.printTree();
+      root->printTree();
     } else if ( op == 'r' ) {
+      int value;
       cout << "Enter value to remove: ";
-      cin >> val;
-      printf("Removing %d... bst:%p val:%d\n", val, &bst, bst.value);
-      bst.remove(val);
+      cin >> value;
+      printf("Removing %d... bst:%p val:%d\n", value, root, root->value);
+      root->remove(value);
+    } else if ( op == 'v' ) {
+      bool result = validateBst( root );
+      printf("Validate Bst: %s\n", result ? "T":"F");
     } else {
       cout << "Invalid entry - try again" << endl;
     }
